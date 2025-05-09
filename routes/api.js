@@ -145,6 +145,17 @@ router.delete("/projects/:id", async (req, res) => {
     res.status(500).json({ success: false, error: "Failed to delete project" });
   }
 });
+//gallery
+router.get("/gallery", async (req, res) => {
+  try {
+    const gallery = await Gallery.find()
+      .sort({ createdAt: -1 })  // Sort by creation date, newest first
+      .exec();
+    res.json({ success: true, data: gallery });
+  } catch (error) {
+    res.status(500).json({ success: false, error: "Failed to fetch gallery items" });
+  }
+});
 
 // News routes
 router.get("/news", async (req, res) => {
@@ -206,12 +217,14 @@ router.delete("/news/:id", async (req, res) => {
 });
 
 // Gallery routes
-router.get("/gallery", async (req, res) => {
+router.get("/projects", async (req, res) => {
   try {
-    const gallery = await Gallery.find().sort({ createdAt: -1 });
-    res.json({ success: true, data: gallery });
+    const projects = await Project.find()
+      .sort({ _id: 1 })  // Sort by _id in ascending order to get oldest first
+      .exec();
+    res.json({ success: true, data: projects });
   } catch (error) {
-    res.status(500).json({ success: false, error: "Failed to fetch gallery" });
+    res.status(500).json({ success: false, error: "Failed to fetch projects" });
   }
 });
 

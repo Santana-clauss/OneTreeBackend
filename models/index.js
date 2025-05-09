@@ -1,12 +1,16 @@
 const mongoose = require("mongoose");
 
 const projectSchema = new mongoose.Schema({
-  name: { type: String, required: true },
-  trees: { type: Number, required: true },
-  images: [{ type: String }],
-  createdAt: { type: Date, default: Date.now },
-  updatedAt: { type: Date, default: Date.now },
-});
+  name: {
+    type: String,
+    required: true
+  },
+  trees: {
+    type: Number,
+    required: true
+  },
+  images: [String],
+}, { timestamps: true });
 
 const newsSchema = new mongoose.Schema({
   title: { type: String, required: true },
