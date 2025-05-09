@@ -18,18 +18,10 @@ const storage = multer.diskStorage({
     cb(null, uploadDir);
   },
   filename: (req, file, cb) => {
-    // Generate a unique filename if a file with the same name exists
-    let filename = file.originalname;
-    let counter = 1;
-    
-    while (fs.existsSync(path.join('uploads', filename))) {
-      const ext = path.extname(file.originalname);
-      const nameWithoutExt = path.basename(file.originalname, ext);
-      filename = `${nameWithoutExt}(${counter})${ext}`;
-      counter++;
-    }
-    
-    cb(null, filename);
+    const ext = path.extname(file.originalname);
+    const nameWithoutExt = path.basename(file.originalname, ext);
+    const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1E9);
+    cb(null, `${nameWithoutExt}-${uniqueSuffix}${ext}`);
   }
 });
 
@@ -46,7 +38,7 @@ const uploadMiddleware = multer({
   storage: storage,
   fileFilter: fileFilter,
   limits: {
-    fileSize: 5 * 1024 * 1024 // 5MB limit
+    fileSize: 25 * 1024 * 1024 // 5MB limit
   }
 });
 
@@ -84,26 +76,29 @@ router.post("/projects", uploadMiddleware.array('images', 5), async (req, res) =
     res.status(500).json({ success: false, error: "Failed to create project" });
   }
 });
-
-router.put("/projects/:id", uploadMiddleware.array('images', 5), async (req, res) => {
+router.put("/projects/:id/images", uploadMiddleware.array('images', 5), async (req, res) => {
   try {
     const { id } = req.params;
-    const { name, trees } = req.body;
-    const newImages = req.files ? req.files.map(file => `/uploads/${file.filename}`) : [];
-    
     const project = await Project.findById(id);
+
     if (!project) {
       return res.status(404).json({ success: false, error: "Project not found" });
     }
 
-    project.name = name || project.name;
-    project.trees = trees ? parseInt(trees) : project.trees;
-    project.images = newImages.length > 0 ? [...project.images, ...newImages] : project.images;
+    const newImages = req.files ? req.files.map(file => `/uploads/${file.filename}`) : [];
     
+    // Add new images to existing ones
+    project.images = [...project.images, ...newImages];
     await project.save();
-    res.json({ success: true, data: project });
+
+    res.json({ 
+      success: true, 
+      message: "Images uploaded successfully",
+      data: project 
+    });
+
   } catch (error) {
-    // Delete uploaded files if database operation fails
+    // Clean up uploaded files if there's an error
     if (req.files) {
       req.files.forEach(file => {
         fs.unlink(file.path, err => {
@@ -111,7 +106,53 @@ router.put("/projects/:id", uploadMiddleware.array('images', 5), async (req, res
         });
       });
     }
-    res.status(500).json({ success: false, error: "Failed to update project" });
+    res.status(500).json({ success: false, error: "Failed to upload images" });
+  }
+});
+router.put("/projects/:id", uploadMiddleware.array('images', 5), async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { name, trees } = req.body;
+    const project = await Project.findById(id);
+
+    if (!project) {
+      return res.status(404).json({ success: false, error: "Project not found" });
+    }
+
+    // Update project fields if provided
+    if (name) project.name = name;
+    if (trees) project.trees = parseInt(trees);
+
+    // Handle new images if any were uploaded
+    if (req.files && req.files.length > 0) {
+      const newImages = req.files.map(file => `/uploads/${file.filename}`);
+      project.images = [...project.images, ...newImages];
+    }
+
+    // Save the updated project
+    const updatedProject = await project.save();
+
+    res.json({ 
+      success: true, 
+      message: "Project updated successfully",
+      data: updatedProject 
+    });
+
+  } catch (error) {
+    console.error('Update error:', error);
+    // Clean up any uploaded files if there was an error
+    if (req.files) {
+      req.files.forEach(file => {
+        fs.unlink(file.path, err => {
+          if (err) console.error('Error deleting file:', err);
+        });
+      });
+    }
+    res.status(500).json({ 
+      success: false, 
+      error: "Failed to update project",
+      details: error.message 
+    });
   }
 });
 
@@ -134,6 +175,49 @@ router.delete("/projects/:id", async (req, res) => {
     res.json({ success: true, message: "Project deleted successfully" });
   } catch (error) {
     res.status(500).json({ success: false, error: "Failed to delete project" });
+  }
+});
+// Add this new route after your existing project routes
+
+router.delete("/projects/:id/images/:imageIndex", async (req, res) => {
+  try {
+    const { id, imageIndex } = req.params;
+    const project = await Project.findById(id);
+
+    if (!project) {
+      return res.status(404).json({ success: false, error: "Project not found" });
+    }
+
+    // Check if image index is valid
+    if (imageIndex < 0 || imageIndex >= project.images.length) {
+      return res.status(400).json({ success: false, error: "Invalid image index" });
+    }
+
+    // Get the image path to delete
+    const imageToDelete = project.images[imageIndex];
+
+    // Delete the file from filesystem
+    const fullPath = path.join(__dirname, '..', imageToDelete);
+    fs.unlink(fullPath, (err) => {
+      if (err) console.error('Error deleting file:', err);
+    });
+
+    // Remove the image from the array
+    project.images.splice(imageIndex, 1);
+    await project.save();
+
+    res.json({ 
+      success: true, 
+      message: "Image deleted successfully",
+      data: project
+    });
+
+  } catch (error) {
+    console.error('Error deleting image:', error);
+    res.status(500).json({ 
+      success: false, 
+      error: "Failed to delete image"
+    });
   }
 });
 router.delete("/projects/:id", async (req, res) => {

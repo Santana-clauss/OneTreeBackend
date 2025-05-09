@@ -17,6 +17,9 @@ connectToDatabase();
 
 // Routes
 app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
+// Add after your existing middleware setup
+app.use(express.json({ limit: '25mb' }));
+app.use(express.urlencoded({ extended: true, limit: '25mb' }));
 app.use("/api", apiRoutes);
 
 app.listen(PORT, () => {

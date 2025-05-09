@@ -1,95 +1,130 @@
-const mongoose = require('mongoose');
-const dotenv = require('dotenv');
-const { Gallery } = require('./models');
-
-dotenv.config();
-
-const galleryData = [
+const projectsData = [
   {
-    src: "/placeholder.svg?height=600&width=800&text=Award+Ceremony",
-    alt: "Award ceremony",
-    caption: "Recognition ceremony for schools that have planted the most trees this year"
+    name: "St Joseph Girls Chepterit",
+    trees: 2400,
+    images: [
+      { source: path.join(__dirname, 'initial-images', 'chepterit5.jpg'), filename: 'chepterit5.jpg' },
+      { source: path.join(__dirname, 'initial-images', 'chepterit2.jpg'), filename: 'chepterit2.jpg' },
+      { source: path.join(__dirname, 'initial-images', 'chepterit6.jpg'), filename: 'chepterit6.jpg' }
+    ]
   },
   {
-    src: "/placeholder.svg?height=600&width=800&text=School+Visit",
-    alt: "School visit",
-    caption: "Our team visiting Eldoret National Polytechnic to discuss future collaborations"
+    name: "World Environmental Day - Landson Foundation",
+    trees: 400,
+    images: [
+      { source: path.join(__dirname, 'initial-images', 'Erday.jpg'), filename: 'Erday.jpg' },
+      { source: path.join(__dirname, 'initial-images', 'Erday1.jpg'), filename: 'Erday1.jpg' },
+      { source: path.join(__dirname, 'initial-images', 'erd5.jpg'), filename: 'erd5.jpg' }
+    ]
   },
   {
-    src: "/placeholder.svg?height=600&width=800&text=Community+Engagement",
-    alt: "Community engagement session",
-    caption: "Community engagement session on the importance of forest conservation"
+    name: "ACK Ziwa High School",
+    trees: 500,
+    images: [
+      { source: path.join(__dirname, 'initial-images', 'ACK Ziwa 1.jpg'), filename: 'ACK Ziwa 1.jpg' },
+      { source: path.join(__dirname, 'initial-images', 'ACK Ziwa 2.jpg'), filename: 'ACK Ziwa 2.jpg' },
+      { source: path.join(__dirname, 'initial-images', 'ACK Ziwa 3.jpg'), filename: 'ACK Ziwa 3.jpg' }
+    ]
   },
   {
-    src: "/placeholder.svg?height=600&width=800&text=Seedling+Distribution",
-    alt: "Seedling distribution",
-    caption: "Distribution of tree seedlings to local schools for their planting programs"
+    name: "Moi Girls High School",
+    trees: 1200,
+    images: [
+      { source: path.join(__dirname, 'initial-images', 'Moi Girls 1.jpg'), filename: 'Moi Girls 1.jpg' },
+      { source: path.join(__dirname, 'initial-images', 'Moi Girls 2.jpg'), filename: 'Moi Girls 2.jpg' },
+      { source: path.join(__dirname, 'initial-images', 'Moi Girls 3.jpg'), filename: 'Moi Girls 3.jpg' }
+    ]
   },
   {
-    src: "/placeholder.svg?height=600&width=800&text=Environmental+Workshop",
-    alt: "Environmental workshop",
-    caption: "Environmental education workshop for teachers and community leaders"
+    name: "Kapkong High School",
+    trees: 1600,
+    images: [
+      { source: path.join(__dirname, 'initial-images', 'Kapkong 1.jpg'), filename: 'Kapkong 1.jpg' },
+      { source: path.join(__dirname, 'initial-images', 'Kapkong 2.jpg'), filename: 'Kapkong 2.jpg' },
+      { source: path.join(__dirname, 'initial-images', 'Kapkong 3.jpg'), filename: 'Kapkong 3.jpg' }
+    ]
   },
   {
-    src: "/placeholder.svg?height=600&width=800&text=Tree+Planting+Event+1",
-    alt: "Large tree planting event",
-    caption: "Our annual tree planting event with over 500 participants from local schools"
+    name: "Nelson Mandela Day - Moi University Primary School",
+    trees: 800,
+    images: [
+      { source: path.join(__dirname, 'initial-images', 'moiuni.jpg'), filename: 'moiuni.jpg' },
+      { source: path.join(__dirname, 'initial-images', 'moiuni1.jpg'), filename: 'moiuni1.jpg' },
+      { source: path.join(__dirname, 'initial-images', 'moiuni3.jpg'), filename: 'moiuni3.jpg' }
+    ]
   },
   {
-    src: "/placeholder.svg?height=600&width=800&text=Eco+Club+Meeting",
-    alt: "Eco-club meeting at school",
-    caption: "An eco-club meeting at ACK Ziwa High School, discussing upcoming projects"
+    name: "Eldoret National Polytechnic",
+    trees: 1000,
+    images: [
+      { source: path.join(__dirname, 'initial-images', 'Eldoret Poly 1.jpg'), filename: 'Eldoret Poly 1.jpg' },
+      { source: path.join(__dirname, 'initial-images', 'Eldoret Poly 2.jpg'), filename: 'Eldoret Poly 2.jpg' },
+      { source: path.join(__dirname, 'initial-images', 'Eldoret Poly 3.jpg'), filename: 'Eldoret Poly 3.jpg' }
+    ]
   },
   {
-    src: "/placeholder.svg?height=600&width=800&text=Students+Planting+2",
-    alt: "Students planting trees in rural area",
-    caption: "Students from Kapkong High School participating in rural reforestation"
+    name: "Kapsabet Girls High School",
+    trees: 1800,
+    images: [
+      { source: path.join(__dirname, 'initial-images', 'Kapsabet Girls 1.jpg'), filename: 'Kapsabet Girls 1.jpg' },
+      { source: path.join(__dirname, 'initial-images', 'Kapsabet Girls 2.jpg'), filename: 'Kapsabet Girls 2.jpg' },
+      { source: path.join(__dirname, 'initial-images', 'Kapsabet Girls 3.jpg'), filename: 'Kapsabet Girls 3.jpg' }
+    ]
   },
   {
-    src: "/placeholder.svg?height=600&width=800&text=Tree+Nursery+1",
-    alt: "Tree nursery managed by women",
-    caption: "Women tending to our tree nursery, growing seedlings for future planting events"
+    name: "Kitale National Polytechnic",
+    trees: 700,
+    images: [
+      { source: path.join(__dirname, 'initial-images', 'Kitale Poly 1.jpg'), filename: 'Kitale Poly 1.jpg' },
+      { source: path.join(__dirname, 'initial-images', 'Kitale Poly 2.jpg'), filename: 'Kitale Poly 2.jpg' },
+      { source: path.join(__dirname, 'initial-images', 'Kitale Poly 3.jpg'), filename: 'Kitale Poly 3.jpg' }
+    ]
   },
   {
-    src: "/placeholder.svg?height=600&width=800&text=Environmental+Education+1",
-    alt: "Environmental education session",
-    caption: "Our team conducting an environmental education session at Moi Girls High School"
+    name: "University of Eldoret",
+    trees: 2000,
+    images: [
+      { source: path.join(__dirname, 'initial-images', 'UoE 1.jpg'), filename: 'UoE 1.jpg' },
+      { source: path.join(__dirname, 'initial-images', 'UoE 2.jpg'), filename: 'UoE 2.jpg' },
+      { source: path.join(__dirname, 'initial-images', 'UoE 3.jpg'), filename: 'UoE 3.jpg' }
+    ]
   },
   {
-    src: "/placeholder.svg?height=600&width=800&text=Community+Project+1",
-    alt: "Community members participating in tree planting",
-    caption: "Local community members joining our reforestation efforts"
+    name: "Moi University Main Campus",
+    trees: 2500,
+    images: [
+      { source: path.join(__dirname, 'initial-images', 'Moi Uni 1.jpg'), filename: 'Moi Uni 1.jpg' },
+      { source: path.join(__dirname, 'initial-images', 'Moi Uni 2.jpg'), filename: 'Moi Uni 2.jpg' },
+      { source: path.join(__dirname, 'initial-images', 'Moi Uni 3.jpg'), filename: 'Moi Uni 3.jpg' }
+    ]
   },
   {
-    src: "/placeholder.svg?height=600&width=800&text=Students+Planting+1",
-    alt: "Students planting trees at local school",
-    caption: "Students from St. Joseph Girls planting trees during our annual event"
+    name: "Kesses Secondary School",
+    trees: 600,
+    images: [
+      { source: path.join(__dirname, 'initial-images', '1746816088412-kgvp54oaz8i.jpg'), filename: '1746816088412-kgvp54oaz8i.jpg' },
+      { source: path.join(__dirname, 'initial-images', 'community(1).jpg'), filename: 'community(1).jpg' }
+    ]
   }
 ];
 
-async function seedGallery() {
+
+async function seedProjects() {
   try {
-    // Connect to MongoDB
-    await mongoose.connect(process.env.MONGO_URI, {
+    await mongoose.connect(process.env.MONGO_URI || 'mongodb://127.0.0.1:27017/onetr', {
       useNewUrlParser: true,
-      useUnifiedTopology: true
+      useUnifiedTopology: true,
     });
-    console.log('Connected to MongoDB');
 
-    // Clear existing gallery items
-    await Gallery.deleteMany({});
-    console.log('Cleared existing gallery items');
+    await Project.deleteMany({});
+    await Project.insertMany(projectsData);
 
-    // Insert new gallery items
-    const result = await Gallery.create(galleryData);
-    console.log(`Successfully seeded ${result.length} gallery items`);
-
+    console.log('Projects seeded successfully!');
+    process.exit(0);
   } catch (error) {
-    console.error('Error seeding gallery:', error);
-  } finally {
-    await mongoose.connection.close();
-    process.exit();
+    console.error('Error seeding projects:', error);
+    process.exit(1);
   }
 }
 
-seedGallery();
+seedProjects();
