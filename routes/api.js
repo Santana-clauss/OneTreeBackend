@@ -3,6 +3,7 @@ const multer = require("multer");
 const path = require("path");
 const fs = require("fs");
 const { Project, News, Gallery } = require("../models");
+const nodemailer = require('nodemailer');
 
 const router = express.Router();
 const upload = multer({ dest: 'uploads/' });
@@ -39,6 +40,17 @@ const uploadMiddleware = multer({
   fileFilter: fileFilter,
   limits: {
     fileSize: 25 * 1024 * 1024 // 5MB limit
+  }
+});
+
+// Configure email transporter
+const transporter = nodemailer.createTransport({
+  host: 'mail.onechildonetree.africa',
+  port: 587,
+  secure: false,
+  auth: {
+    user: 'info@onechildonetree.africa',
+    pass: process.env.EMAIL_PASSWORD
   }
 });
 
@@ -335,6 +347,51 @@ router.delete("/gallery/:id", async (req, res) => {
     res.json({ success: true, message: "Gallery item deleted successfully" });
   } catch (error) {
     res.status(500).json({ success: false, error: "Failed to delete gallery item" });
+  }
+});
+
+// Contact form endpoint
+router.post("/contact", async (req, res) => {
+  try {
+    const { name, email, message } = req.body;
+
+    // Validate input
+    if (!name || !email || !message) {
+      return res.status(400).json({
+        success: false,
+        error: "Please provide name, email and message"
+      });
+    }
+
+    // Email content
+    const mailOptions = {
+      from: email,
+      to: 'info@onechildonetree.africa',
+      subject: `Contact Form Submission from ${name}`,
+      text: message,
+      html: `
+        <h3>New Contact Form Submission</h3>
+        <p><strong>Name:</strong> ${name}</p>
+        <p><strong>Email:</strong> ${email}</p>
+        <p><strong>Message:</strong></p>
+        <p>${message}</p>
+      `
+    };
+
+    // Send email
+    await transporter.sendMail(mailOptions);
+
+    res.json({
+      success: true,
+      message: "Message sent successfully"
+    });
+
+  } catch (error) {
+    console.error('Contact form error:', error);
+    res.status(500).json({
+      success: false,
+      error: "Failed to send message"
+    });
   }
 });
 
