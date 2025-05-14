@@ -339,7 +339,37 @@ router.post("/gallery", uploadMiddleware.single('src'), async (req, res) => {
     res.status(500).json({ success: false, error: "Failed to create gallery item" });
   }
 });
+//UPDATING
+router.put("/gallery/:id", uploadMiddleware.single('src'), async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { alt, caption } = req.body;
 
+    // Build the update object
+    const updateData = {
+      ...(alt && { alt }),
+      ...(caption && { caption }),
+    };
+
+    // If a new image is uploaded, update src
+    if (req.file) {
+      updateData.src = req.file.path;
+    }
+
+    const updatedItem = await Gallery.findByIdAndUpdate(id, updateData, {
+      new: true,
+    });
+
+    if (!updatedItem) {
+      return res.status(404).json({ success: false, error: "Gallery item not found" });
+    }
+
+    res.json({ success: true, data: updatedItem });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ success: false, error: "Failed to update gallery item" });
+  }
+});
 router.delete("/gallery/:id", async (req, res) => {
   try {
     const { id } = req.params;
